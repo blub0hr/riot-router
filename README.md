@@ -24,12 +24,12 @@ What's it look like?
 --------------------
 
 ```js
-var Route = riot.router.Route, 
-    DefaultRoute = riot.router.DefaultRoute, 
-    NotFoundRoute = riot.router.NotFoundRoute, 
-    RedirectRoute = riot.router.RedirectRoute;
+var Route = router.Route, 
+    DefaultRoute = router.DefaultRoute, 
+    NotFoundRoute = router.NotFoundRoute, 
+    RedirectRoute = router.RedirectRoute;
 
-riot.router.routes([
+router.routes([
   new DefaultRoute({tag: 'home'}),
   new Route({tag: 'about'}),
   new Route({tag: 'users'}).routes([
@@ -44,7 +44,7 @@ riot.router.routes([
 ]);
 
 riot.mount('*');
-riot.router.start();
+router.start();
 ```
 
 Thanks, React-Router
