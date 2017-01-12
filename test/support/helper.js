@@ -1,9 +1,9 @@
 var riot = require('riot');
 var router = require('../../router');
 
-riot.router.start();
+router.start();
 
 module.exports = {
   riot: riot,
-  router: riot.router
+  router: router
 };

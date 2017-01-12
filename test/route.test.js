@@ -1,16 +1,16 @@
 var assert = require('assert'),
     helper = require('./support/helper'),
-    riot = helper.riot;
+    riot = helper.riot,
+    router = helper.router;
 
-var Route = riot.router.Route;
-var NotFoundRoute = riot.router.NotFoundRoute;
-var DefaultRoute = riot.router.DefaultRoute;
-var Request = riot.router._.Request;
-var Response = riot.router._.Response;
+var Route = router.Route;
+var NotFoundRoute = router.NotFoundRoute;
+var DefaultRoute = router.DefaultRoute;
+var Request = router._.Request;
+var Response = router._.Response;
 
 riot.tag('need-data', '<span>{ opts.someData }</span>', function (opts) {
 });
-
 
 describe('riot.route', function() {
   var tag;
@@ -22,7 +22,7 @@ describe('riot.route', function() {
     document.body.appendChild(route);
 
     tag = riot.mount('route')[0];
-    riot.router.routes([
+    router.routes([
       new Route({tag: 'static'}),
       new Route({tag: 'need-data'}),
       new Route({path: '/dynamic', tag: function () { return 'dynamic'; }}),
@@ -33,22 +33,29 @@ describe('riot.route', function() {
   });
 
   it('works with static tags', function() {
-    riot.route('/static');
+    riot.tag('static', '<p>testing<p>');
+    router.navigateTo('/static');
+    riot.unregister('static');
     assert.ok(document.querySelector('static'));
   });
 
   it('works with dynamic tags', function() {
-    riot.route('/dynamic');
+    riot.tag('dynamic', '<p>testing<p>');
+    router.navigateTo('/dynamic');
+    riot.unregister('dynamic');
     assert.ok(document.querySelector('dynamic'));
   });
 
   it('works with dynamic tags and api', function() {
-    riot.route('/dynamic-api');
+    riot.tag('dynamic-api', '<p>testing<p>');
+    router.navigateTo('/dynamic-api');
+    riot.unregister('dynamic-api');
     assert.ok(document.querySelector('dynamic-api'));
   });
 
   it('passes data to the mounted tag', function() {
-    riot.route('/need-data');
+    router.navigateTo('/need-data');
     assert.equal(tag.instance.opts.someData, someData);
   });
+
 });

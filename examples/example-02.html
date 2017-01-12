@@ -42,12 +42,12 @@
 
         // My app routes
         var
-          Route = riot.router.Route,
-          DefaultRoute = riot.router.DefaultRoute,
-          NotFoundRoute = riot.router.NotFoundRoute,
-          RedirectRoute = riot.router.RedirectRoute;
+          Route = router.Route,
+          DefaultRoute = router.DefaultRoute,
+          NotFoundRoute = router.NotFoundRoute,
+          RedirectRoute = router.RedirectRoute;
 
-        riot.router.routes([
+        router.routes([
           new Route({tag: 'hello'}),
           new Route({tag: 'parameters'}),
           new DefaultRoute({tag: 'home'}),
@@ -56,7 +56,7 @@
         ]);
 
         // Start routing
-        riot.router.start();
+        router.start();
       });
     </script>
   </body>

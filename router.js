@@ -1,4 +1,5 @@
 var riot = require('riot');
+var riotroute = require('riot-route');
 var extend = require('extend');
 var error = console && console.error || function() {};
 
@@ -20,7 +21,6 @@ function customRiotParser(path) {
 class Router {
 
   constructor() {
-    riot.router = this;
     riot.observable(this);
     this.interceptors = [this.processRoute.bind(this)];
     this.handler = new InitialRoute();
@@ -85,8 +85,12 @@ class Router {
     this.navigateTo(uri);
   }
 
-  navigateTo(uri) {
-    riot.route(uri);
+  navigateTo() {
+    var args = Array.prototype.slice.call(arguments);
+    if(typeof(args[1]) === 'boolean') {
+      args.splice(1, 0, '');
+    }
+    riotroute.apply(null, args);
   }
 
   processInterceptors(context, preInterceptors, postInterceptors) {
@@ -95,8 +99,9 @@ class Router {
       if (!context.stop) {
         var processor = interceptors.shift();
         var {request, response} = context;
-        if (processor)
+        if (processor) {
           return processor(request, response, next, context);
+        }
       }
       return context;
     };
@@ -109,14 +114,14 @@ class Router {
   }
 
   start() {
-    riot.route.parser(customRiotParser);
-    riot.route(this.process);
-    riot.route.start();
+    riotroute.parser(customRiotParser);
+    riotroute(this.process);
+    riotroute.start();
     this.exec();
   }
 
   exec() {
-    riot.route.exec(this.process);
+    riotroute.exec(this.process);    
   }
 
 }
@@ -376,12 +381,13 @@ riot.tag('route', '<router-content></router-content>', function(opts) {
         this.instance = riot.mount(this.root.children[0], tag, api)[0];
         this.instanceTag = tag;
         this.instanceApi = api;
+        
       }
     }
   }
 
   this.canUpdate = function(tag, api, options) {
-    if ((!riot.router.config.updatable && !opts.updatable && !options.updatable)
+    if ((!router.config.updatable && !opts.updatable && !options.updatable)
       || !this.instance
       || !this.instance.isMounted
       || this.instanceTag !== tag)
@@ -391,8 +397,8 @@ riot.tag('route', '<router-content></router-content>', function(opts) {
 
   this.updateRoute = function() {
     var mount = {tag: null};
-    if (riot.router && riot.router.current) {
-      var response = riot.router.current;
+    if (router && router.current) {
+      var response = router.current;
       if (this.level <= response.size()) {
         var matcher = response.get(this.level);
         if (matcher) {
@@ -411,9 +417,9 @@ riot.tag('route', '<router-content></router-content>', function(opts) {
 
   this.__router_tag = 'route';
   this.level = this.calculateLevel(this);
-  riot.router.on('route:updated', this.updateRoute);
+  router.on('route:updated', this.updateRoute);
   this.on('unmount', function() {
-    riot.router.off('route:updated', this.updateRoute);
+    router.off('route:updated', this.updateRoute);
     this.unmountTag();
   }.bind(this));
   this.on('mount', function() {
@@ -431,7 +437,5 @@ router._ = {Response: Response, Request: Request};
 router.config = {
   updatable: false
 }
-
-riot.router = router;
 
 module.exports = router;

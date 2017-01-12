@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <title>Riot App Example 01</title>
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/semantic-ui/2/semantic.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link rel="stylesheet" href="http://cdn.jsdelivr.net/semantic-ui/2/semantic.min.css">
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
   <style>
     .content.app {
       display: block;
@@ -41,14 +41,14 @@
     <!-- Login page -->
     <login>
       <div>
-        <input name="username"/>
+        <input ref="username" name="username"/>
         <button onClick={this.login}>Login</button>
       </div>
       login() {
-        window.user = this.username;
+        window.user = this.refs.username;
         localStorage.setItem('user', window.user);
         // Go to home page
-        riot.route('#/');
+        router.navigateTo('#/');
       }
     </login>
 
@@ -56,7 +56,7 @@
       window.user = null;
       localStorage.removeItem('user');
       // Go to login page
-      riot.route('#/login');
+      router.navigateTo('#/login');
     </logout>
 
     <!-- Application -->
@@ -68,9 +68,9 @@
     <!-- Main menu -->
     <main-menu class="ui teal inverted top fixed app menu">
       <div class="ui container">
-        <a class={item: true, active: menu.url.substring(1) === riot.router.current.uri} href="{menu.url}" each={menu in this.leftMenus}><i class="{menu.icon} icon" if={menu.icon}></i>{menu.text}</a>
+        <a class={item: true, active: menu.url.substring(1) === router.current.uri} href="{menu.url}" each={menu in this.leftMenus}><i class="{menu.icon} icon" if={menu.icon}></i>{menu.text}</a>
         <div class="right menu" if={this.rightMenus.length}>
-          <a class={item: true, active: menu.url.substring(1) === riot.router.current.uri} href="{menu.url}" each={menu in this.rightMenus}><i class="{menu.icon} icon" if={menu.icon}></i>{menu.text}</a>
+          <a class={item: true, active: menu.url.substring(1) === router.current.uri} href="{menu.url}" each={menu in this.rightMenus}><i class="{menu.icon} icon" if={menu.icon}></i>{menu.text}</a>
         </div>
       </div>
       createLeftMenus() {
@@ -102,9 +102,11 @@
         this.rightMenus = this.createRightMenus();
       }
 
+      this.leftMenus = [];
+      this.rightMenus = [];
 
       // On route update, update this fragment.
-      riot.router.on('route:updated', function() {
+      router.on('route:updated', function() {
         this.createMenus();
         this.update();
       }.bind(this));
@@ -112,40 +114,40 @@
 
     <!-- Users page -->
     <users>
-      <route if={!userId} class="ui header"/>
-      <div class="ui grid">
-        <div class="{userId ? 'six' : 'sixteen'} wide column">
-          <div class="ui top attached segment">
-            <div class="ui fluid icon input  ">
-              <input name="search" onkeyup={this.filter} type="text" placeholder="Filter users..."/>
+        <route if={!userId} class="ui header"></route>
+        <div class="ui grid">
+            <div class="{userId ? 'six' : 'sixteen'} wide column">
+                <div class="ui top attached segment">
+                    <div class="ui fluid icon input  ">
+                    <input ref="search" name="search" onkeyup={this.filter} type="text" placeholder="Filter users..."/>
+                    </div>
+                </div>
+                <div class="ui attached segment">
+                    <table class="ui very basic table">
+                    <thead>
+                        <tr>
+                        <th>Name</th>
+                        <th>Id</th>
+                        <th if={!userId}>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr each={user in this.users} class={active: userId == user.id}>
+                        <td><a href="#/u/{user.id}">{user.id}</a></td>
+                        <td><a href="#/u/{user.id}">{user.name}</a></td>
+                        <td if={!userId}>{user.email}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
             </div>
-          </div>
-          <div class="ui attached segment">
-            <table class="ui very basic table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Id</th>
-                  <th if={!userId}>Email</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr each={user in this.users} class={active: userId == user.id}>
-                  <td><a href="#/u/{user.id}">{user.id}</a></td>
-                  <td><a href="#/u/{user.id}">{user.name}</a></td>
-                  <td if={!userId}>{user.email}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <route class="ten wide column" if={userId}></route>
         </div>
-        <route class="ten wide column" if={userId}/>
-      </div>
 
       this.users = window.users.getUsers();
 
       filter() {
-        var keyword = this.search.value.toLowerCase();
+        var keyword = this.refs.search.value.toLowerCase();
         this.users = window.users.filter(function(user) {
           var target = user.name.toLowerCase() + user.id + user.email.toLowerCase();
           if (target.indexOf(keyword) > -1) {
@@ -156,30 +158,33 @@
         return true;
       }
 
+      this.on('mount', this.update);
       this.on('update', function() {
-        this.userId = riot.router.current.params.userId;
+        this.userId = router.current.params.userId;
       }.bind(this));
     </users>
 
     <!-- User detail page fragment -->
     <user>
       <div class="ui segment">
-        <route />
+        <route></route>
         <div>{user.id} - {user.name}</div>
       </div>
-
+riot
       updateContent(opts) {
         if (!opts) return;
         this.userId = opts.userId;
         this.animate = opts.animate === "true";
         this.user = window.users.getUser(this.userId);
         if (this.user === null) {
-          riot.route('/not-found');
+          router.navigateTo('/not-found', true);
         }
       }
+      
+      this.on('mount', this.update);
       this.on('update', this.updateContent.bind(this));
       this.on('updated', function() {
-        var $el = jQuery(this.root).clearQueue();
+        var $el = $(this.root).clearQueue();
         if (this.animate)
           $el.fadeOut().fadeIn().fadeOut().fadeIn();
       }.bind(this));
@@ -211,7 +216,7 @@
 
     <!-- Not found page -->
     <not-found>
-      <div class="ui segment">Page '{riot.router.current.uri}' not found! </div>
+      <div class="ui segment">Page '{router.current.uri}' not found! </div>
     </not-found>
   </script>
   <script src="../node_modules/riot/riot+compiler.min.js"></script>
@@ -263,16 +268,16 @@
     // Mount all Riot tags.
     riot.mount('*');
 
-    var Route = riot.router.Route,
-        DefaultRoute = riot.router.DefaultRoute,
-        NotFoundRoute = riot.router.NotFoundRoute,
-        RedirectRoute = riot.router.RedirectRoute;
+    var Route = router.Route,
+        DefaultRoute = router.DefaultRoute,
+        NotFoundRoute = router.NotFoundRoute,
+        RedirectRoute = router.RedirectRoute;
 
     // Apply security filter to Riot-Router
-    riot.router.use(securityFilter);
+    router.use(securityFilter);
 
     // My app routes
-    riot.router.routes([
+    router.routes([
       new DefaultRoute({tag: 'home'}),
       new Route({tag: 'login'}),
       new Route({tag: 'logout'}),
@@ -294,7 +299,7 @@
     ]);
 
     // Start routing
-    riot.router.start();
+    router.start();
 
   </script>
 </body>

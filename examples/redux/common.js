@@ -42,11 +42,11 @@ function CreateSimpleApp(config) {
     riot.mount('*');
     if (context.routes) {
       if (Object.prototype.toString.call(context.routes) === '[object Array]')
-        riot.router.routes(context.routes);
+        router.routes(context.routes);
       else
-        riot.router.route(context.routes);
-      riot.router.config.updatable = true;
-      riot.router.start();
+        router.route(context.routes);
+      router.config.updatable = true;
+      router.start();
     }
   }
 
